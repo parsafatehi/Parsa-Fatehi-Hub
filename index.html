@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parsa Fatehi</title>
+    <meta name="description" content="The personal internet hub of Parsa Fatehi.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="https://avatars.githubusercontent.com/parsafatehi?s=64">
+
+    <style>
+        /* Core Theme Variables */
+        :root {
+            --bg-color: #050505;
+            --bg-gradient: radial-gradient(circle at 50% -20%, rgba(30, 30, 30, 0.4), transparent 60%);
+            --card-bg: #0c0c0c;
+            --card-hover-bg: #111111;
+            --border-color: #1a1a1a;
+            --border-hover-color: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #8a8a8a;
+            --text-tertiary: #555555;
+            --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-color: rgba(0,0,0,0.4);
+            --spotlight-color: rgba(255, 255, 255, 0.03);
+            --gh-graph-filter: invert(1) hue-rotate(180deg) contrast(0.8);
+            
+            /* Brand Colors */
+            --c-spotify: #1DB954;
+            --c-linkedin: #0A66C2;
+            --c-trakt: oklch(56.1% .205 314.2);
+            --c-reddit: #FF4500;
+            --c-ph: #DA552F;
+            --c-substack: #FF6719;
+            --c-figma: #F24E1E;
+        }
+
+        /* Light Mode Overrides */
+        [data-theme="light"] {
+            --bg-color: #f5f5f7;
+            --bg-gradient: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.8), rgba(245, 245, 247, 0));
+            --card-bg: #ffffff;
+            --card-hover-bg: #fafafa;
+            --border-color: #e5e5e7;
+            --border-hover-color: #c7c7cc;
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-tertiary: #86868b;
+            --shadow-color: rgba(0,0,0,0.05);
+            --spotlight-color: rgba(0, 0, 0, 0.02);
+            --gh-graph-filter: none;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            background-image: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 4vh 5vw;
+            padding-top: 8vh; /* Space for toggle */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: var(--transition);
+            color: var(--text-primary);
+        }
+        .theme-toggle:hover { border-color: var(--border-hover-color); transform: scale(1.05); }
+        .theme-toggle svg { width: 18px; height: 18px; }
+
+        /* Bento Grid Layout */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: minmax(160px, auto);
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+            grid-template-areas: 
+                "profile khorshid khorshid khorshid"
+                "profile spotify github github"
+                "instagram instagram medium substack"
+                "instagram instagram linkedin x"
+                "trakt trakt reddit producthunt"
+                "trakt trakt figma figma";
+        }
+
+        /* Card Base Styles */
+        .card {
+            position: relative;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform var(--transition), background-color var(--transition), border-color var(--transition), box-shadow var(--transition);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            background-color: var(--card-hover-bg);
+            border-color: var(--border-hover-color);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 40px var(--shadow-color);
+            z-index: 10;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--x) var(--y), var(--spotlight-color), transparent 40%);
+            opacity: 0;
+            transition: opacity var(--transition);
+            pointer-events: none;
+        }
+        .card:hover::before { opacity: 1; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: auto;
+        }
+
+        .brand-logo { width: 22px; height: 22px; opacity: 0.9; transition: transform var(--transition); }
+        .card:hover .brand-logo { transform: scale(1.1); }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+            text-transform: capitalize;
+        }
+
+        .card-content { margin-top: 16px; }
+
+        /* Card Specifics */
+
+        /* Khorshid (OG Share Card Style) */
+        .card-khorshid { grid-area: khorshid; display: flex; flex-direction: row; padding: 0; }
+        .khorshid-img {
+            width: 45%;
+            background-size: cover;
+            background-position: center;
+            border-right: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+        .card-khorshid:hover .khorshid-img { transform: scale(1.02); }
+        .khorshid-info {
+            width: 55%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .khorshid-url { color: var(--text-tertiary); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+        .khorshid-title { font-size: 20px; font-weight: 600; margin: 8px 0 6px; }
+        .khorshid-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Profile */
+        .card-profile { grid-area: profile; padding: 0; border: none; background: transparent; }
+        .card-profile:hover { transform: scale(1.02); box-shadow: none; background: transparent; border: none; }
+        .card-profile img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 20px;
+            border: 1px solid var(--border-color); filter: grayscale(20%) contrast(1.1);
+            transition: filter var(--transition);
+        }
+        .card-profile:hover img { filter: grayscale(0%) contrast(1.1); }
+
+        /* GitHub */
+        .card-github { grid-area: github; }
+        .gh-graph {
+            width: 100%; margin-top: 12px; border-radius: 8px;
+            filter: var(--gh-graph-filter); opacity: 0.8; transition: opacity var(--transition);
+        }
+        .card-github:hover .gh-graph { opacity: 1; }
+        .gh-repos { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .gh-repo {
+            font-size: 12px; color: var(--text-secondary);
+            display: flex; justify-content: space-between;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+        }
+        .gh-repo span { color: var(--text-primary); font-weight: 500; }
+
+        /* Spotify */
+        .card-spotify { grid-area: spotify; }
+        .spotify-player { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+        .spotify-art {
+            width: 56px; height: 56px; border-radius: 6px;
+            background: var(--border-color); box-shadow: 0 8px 24px var(--shadow-color); object-fit: cover;
+        }
+        .spotify-info h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spotify-info p { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .equalizer { display: flex; gap: 3px; align-items: flex-end; height: 16px; margin-left: auto; }
+        .eq-bar { width: 3px; background-color: var(--c-spotify); animation: eq 1s infinite ease-in-out; }
+        .eq-bar:nth-child(1) { height: 60%; animation-delay: -0.2s; }
+        .eq-bar:nth-child(2) { height: 100%; animation-delay: -0.5s; }
+        .eq-bar:nth-child(3) { height: 40%; animation-delay: -0.8s; }
+        .eq-bar:nth-child(4) { height: 80%; animation-delay: -0.3s; }
+        @keyframes eq { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+
+        /* Instagram */
+        .card-instagram { grid-area: instagram; padding: 0; }
+        .ig-header { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: center; }
+        .ig-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr 1fr; flex: 1; margin-top: 16px; gap: 2px; }
+        .ig-post { background-size: cover; background-position: center; transition: transform var(--transition); }
+        .card-instagram:hover .ig-post { transform: scale(0.98); }
+
+        /* Medium & Substack */
+        .card-medium { grid-area: medium; }
+        .card-substack { grid-area: substack; }
+        .article-preview h3 {
+            font-size: 14px; font-weight: 600; margin: 12px 0 6px; line-height: 1.3;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .article-preview p { font-size: 11px; color: var(--text-tertiary); }
+
+        /* Simple Brand Cards */
+        .card-linkedin { grid-area: linkedin; }
+        .card-x { grid-area: x; }
+        .card-producthunt { grid-area: producthunt; }
+        .card-reddit { grid-area: reddit; flex-direction: row; align-items: center; justify-content: space-between; }
+        .card-figma { grid-area: figma; flex-direction: row; align-items: center; justify-content: space-between; }
+        
+        .simple-card-content { margin-top: 0; }
+        .simple-card-content h2 { font-size: 24px; font-weight: 600; margin-top: 8px; }
+        .simple-card-content p { font-size: 12px; color: var(--text-secondary); }
+
+        /* Trakt */
+        .card-trakt { grid-area: trakt; }
+        .trakt-posters { display: flex; gap: 10px; margin-top: 12px; overflow: hidden; }
+        .trakt-poster {
+            flex: 1; max-width: 90px; aspect-ratio: 2/3; border-radius: 6px;
+            background-size: cover; background-position: center; position: relative;
+            transition: transform var(--transition);
+        }
+        .card-trakt:hover .trakt-poster { transform: translateX(-8px); }
+        .trakt-poster:first-child { transform: translateX(0); }
+        .trakt-poster::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, var(--shadow-color), transparent 60%);
+            opacity: 0; transition: opacity var(--transition);
+        }
+        .card-trakt:hover .trakt-poster::after { opacity: 1; }
+
+        /* Brand Hover Glows */
+        .card-spotify:hover { border-color: rgba(29, 185, 84, 0.4); }
+        .card-instagram:hover { border-color: rgba(220, 39, 67, 0.4); }
+        .card-linkedin:hover { border-color: rgba(10, 102, 194, 0.4); }
+        .card-github:hover { border-color: rgba(128, 128, 128, 0.3); }
+        .card-trakt:hover { border-color: rgba(206, 28, 237, 0.4); }
+        .card-reddit:hover { border-color: rgba(255, 69, 0, 0.4); }
+        .card-producthunt:hover { border-color: rgba(218, 85, 47, 0.4); }
+        .card-substack:hover { border-color: rgba(255, 103, 25, 0.4); }
+        .card-figma:hover { border-color: rgba(242, 78, 30, 0.4); }
+
+        /* Responsive Design */
+        @media (max-width: 1000px) {
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-areas: 
+                    "profile khorshid"
+                    "github github"
+                    "spotify instagram"
+                    "spotify instagram"
+                    "medium substack"
+                    "linkedin x"
+                    "producthunt reddit"
+                    "trakt trakt"
+                    "figma figma";
+            }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 20px; padding-top: 80px; }
+            .bento-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas: 
+                    "profile" "khorshid" "github" "spotify" "instagram" "medium" "substack" "linkedin" "x" "producthunt" "reddit" "figma" "trakt";
+            }
+            .card-khorshid { flex-direction: column; }
+            .khorshid-img { width: 100%; height: 150px; border-right: none; border-bottom: 1px solid var(--border-color); }
+            .khorshid-info { width: 100%; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards; }
+        .card:nth-child(1) { animation-delay: 0.05s; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.15s; }
+        .card:nth-child(4) { animation-delay: 0.2s; }
+        .card:nth-child(5) { animation-delay: 0.25s; }
+        .card:nth-child(6) { animation-delay: 0.3s; }
+        .card:nth-child(7) { animation-delay: 0.35s; }
+        .card:nth-child(8) { animation-delay: 0.4s; }
+        .card:nth-child(9) { animation-delay: 0.45s; }
+        .card:nth-child(10) { animation-delay: 0.5s; }
+        .card:nth-child(11) { animation-delay: 0.55s; }
+        .card:nth-child(12) { animation-delay: 0.6s; }
+        .card:nth-child(13) { animation-delay: 0.65s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card, .eq-bar { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <svg id="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg id="sun-icon" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+    </button>
+
+    <main class="bento-grid">
+        
+        <!-- Khorshid (OG Share Card) -->
+        <a href="https://khorshidlab.com/" target="_blank" class="card card-khorshid">
+            <div class="khorshid-img" style="background-image: url('https://khorshidlab.com/wp-content/uploads/2021/05/14000302-DSN-KHL-ShareCardsGeneral-1.0.jpg');"></div>
+            <div class="khorshid-info">
+                <div class="card-header" style="margin-bottom: 0;">
+                    <span class="khorshid-url">khorshidlab.com</span>
+                    <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                </div>
+                <div>
+                    <div class="khorshid-title">Khorshid</div>
+                    <div class="khorshid-desc">We combine research-driven strategy, inventive design, and clean coding to architect change and build the best experiences for our clients’ audiences.</div>
+                </div>
+            </div>
+        </a>
+
+        <!-- Profile Picture -->
+        <a href="https://parsafatehi.ir" target="_blank" class="card card-profile" aria-label="View Parsa Fatehi Pageß">
+            <img src="https://avatars.githubusercontent.com/parsafatehi" alt="Parsa Fatehi">
+        </a>
+
+        <!-- GitHub (Expanded) -->
+        <a href="https://github.com/parsafatehi" target="_blank" class="card card-github">
+            <div class="card-header">
+                <span class="card-title">GitHub</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            </div>
+            <div class="card-content">
+                <img src="https://ghchart.rshah.org/2a2a2a/parsafatehi" alt="GitHub Contributions" class="gh-graph">
+                <div class="gh-repos" id="gh-repos">
+                    <div class="gh-repo"><span>Loading repos...</span><span></span></div>
+                </div>
+            </div>
+        </a>
+
+        <!-- Spotify -->
+        <a href="https://open.spotify.com/user/121070204" target="_blank" class="card card-spotify">
+            <div class="card-header">
+                <span class="card-title">Spotify</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="var(--c-spotify)"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            </div>
+            <div class="card-content spotify-player">
+                <img id="spotify-art" src="https://images.unsplash.com/photo-1614613535308-eb5f1e772b0b?q=80&w=300&auto=format&fit=crop" alt="Album Art" class="spotify-art">
+                <div class="spotify-info">
+                    <h3 id="spotify-title">Midnight City</h3>
+                    <p id="spotify-artist">M83 • Hurry Up, We're Dreaming</p>
+                </div>
+                <div class="equalizer">
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                </div>
+            </div>
+        </a>
+
+        <!-- Instagram -->
+        <a href="https://instagram.com/parsafatehi" target="_blank" class="card card-instagram">
+            <div class="ig-header">
+                <span class="card-title">Instagram</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="url(#ig-gradient)"><defs><linearGradient id="ig-gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+            <div class="ig-grid">
+                <div class="ig-post" id="ig-1" style="background-image: url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?q=80&w=500&auto=format&fit=crop')"></div>
+                <div class="ig-post" id="ig-2" style="background-image: url('https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=500&auto=format&fit=crop')"></div>
+                <div class="ig-post" id="ig-3" style="background-image: url('https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?q=80&w=500&auto=format&fit=crop')"></div>
+                <div class="ig-post" id="ig-4" style="background-image: url('https://images.unsplash.com/photo-1485160497022-3e09382fb310?q=80&w=500&auto=format&fit=crop')"></div>
+            </div>
+        </a>
+
+        <!-- Medium -->
+        <a href="https://medium.com/@parsafatehi" target="_blank" class="card card-medium">
+            <div class="card-header">
+                <span class="card-title">Medium</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M19.75 5.625V18.375H18.5V5.625H19.75ZM14.5 5.625V18.375H13.25V5.625H14.5ZM9.25 5.625V18.375H8V5.625H9.25ZM4 5.625V18.375H2.75V5.625H4Z"/></svg>
+            </div>
+            <div class="card-content article-preview">
+                <h3 id="medium-title">Loading latest article...</h3>
+                <p id="medium-date">Medium</p>
+            </div>
+        </a>
+
+        <!-- Substack -->
+        <a href="https://parsafatehi.substack.com/" target="_blank" class="card card-substack">
+            <div class="card-header">
+                <span class="card-title">Substack</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="var(--c-substack)"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+            </div>
+            <div class="card-content article-preview">
+                <h3 id="substack-title">Loading latest dispatch...</h3>
+                <p id="substack-date">Substack</p>
+            </div>
+        </a>
+
+        <!-- LinkedIn -->
+        <a href="https://linkedin.com/in/parsafatehi" target="_blank" class="card card-linkedin">
+            <div class="card-header">
+                <span class="card-title">LinkedIn</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="var(--c-linkedin)"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </div>
+            <div class="card-content simple-card-content">
+                <h2>Parsa Fatehi</h2>
+                <p>View profile</p>
+            </div>
+        </a>
+
+        <!-- X -->
+        <a href="https://x.com/parsafatehi" target="_blank" class="card card-x">
+            <div class="card-header">
+                <span class="card-title">X</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </div>
+            <div class="card-content simple-card-content">
+                <h2>@parsafatehi</h2>
+                <p>Thoughts & updates</p>
+            </div>
+        </a>
+
+        <!-- Reddit -->
+        <a href="https://reddit.com/user/parsafatehi" target="_blank" class="card card-reddit">
+            <div class="card-header" style="margin-bottom: 0; flex-direction: column; align-items: flex-start; gap: 12px;">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="var(--c-reddit)"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.286-1.84.746-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.755.107-5.249.868-7.083 2.082-.474-.458-1.116-.741-1.825-.741-1.465 0-2.657 1.187-2.657 2.646 0 .97.534 1.812 1.316 2.27-.05.252-.079.51-.079.771 0 3.794 4.553 6.875 10.16 6.875s10.161-3.081 10.161-6.875c0-.261-.029-.519-.079-.771.782-.458 1.315-1.3 1.315-2.27zm-12.579 5.039c-1.094 0-1.984-.887-1.984-1.982s.89-1.983 1.984-1.983c1.094 0 1.984.888 1.984 1.983s-.89 1.982-1.984 1.982zm.421 3.6c-.027.005-.052.015-.079.021-.052-.004-.103-.012-.155-.012-1.492 0-2.711-1.211-2.721-2.701-.004-.011-.004-.022-.004-.033.188.118.391.215.602.295.04.263.119.512.227.745-.012.058-.024.115-.024.176 0 .473.383.856.856.856.178 0 .341-.057.477-.149.176.045.357.078.542.101-.079.275-.276.481-.521.574zm6.316-2.692c-.01 1.49-1.229 2.701-2.721 2.701-.052 0-.103.008-.155.012-.027-.006-.052-.016-.079-.021-.245-.093-.442-.299-.521-.574.185-.023.366-.056.542-.101.136.092.299.149.477.149.473 0 .856-.383.856-.856 0-.061-.012-.118-.024-.176.108-.233.187-.482.227-.745.211-.08.414-.177.602-.295 0 .011 0 .022-.004.033zm1.221-2.947c0 .706-.583 1.279-1.299 1.279s-1.299-.573-1.299-1.279c0-.706.583-1.279 1.299-1.279s1.299.573 1.299 1.279zm-8.712 0c0 .706-.583 1.279-1.299 1.279s-1.299-.573-1.299-1.279c0-.706.583-1.279 1.299-1.279s1.299.573 1.299 1.279z"/></svg>
+            </div>
+            <div class="card-content simple-card-content" style="margin-top:0;">
+                <h2 style="font-size: 20px; margin-top: 0;">u/parsafatehi</h2>
+                <p>Reddit Profile</p>
+            </div>
+        </a>
+
+        <!-- Product Hunt -->
+        <a href="https://producthunt.com/@parsafatehi" target="_blank" class="card card-producthunt">
+            <div class="card-header">
+                <span class="card-title">Product Hunt</span>
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="var(--c-ph)"><path d="M13.604 8.4h-3.404v3.2h3.404c.883 0 1.6-.717 1.6-1.6s-.717-1.6-1.6-1.6zm0-5.2h-7.604v17.6h3.2v-6h4.404c2.65 0 4.8-2.15 4.8-4.8s-2.15-6.8-4.8-6.8z"/></svg>
+            </div>
+            <div class="card-content simple-card-content">
+                <h2>Explorer</h2>
+                <p>View my upvotes</p>
+            </div>
+        </a>
+
+        <!-- Figma -->
+        <a href="https://figma.com/@parsa" target="_blank" class="card card-figma">
+            <div class="card-header" style="margin-bottom: 0; flex-direction: column; align-items: flex-start; gap: 12px;">
+                <svg class="brand-logo" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z" fill="#1ABCFE"/>
+                    <path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z" fill="#0ACF83"/>
+                    <path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z" fill="#FF7262"/>
+                    <path d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" fill="#F24E1E"/>
+                    <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" fill="#A259FF"/>
+                </svg>
+            </div>
+            <div class="card-content simple-card-content" style="margin-top:0;">
+                <h2 style="font-size: 20px; margin-top: 0;">Design Files</h2>
+                <p>View Figma</p>
+            </div>
+        </a>
+
+        <!-- Trakt -->
+        <a href="https://app.trakt.tv/profile/parsafatehi" target="_blank" class="card card-trakt">
+            <div class="card-header">
+                <span class="card-title">Recently Watched</span>
+                
+                <svg class="brand-logo" viewBox="0 0 50 50" fill="var(--c-trakt)">
+                  <!-- <g class="trakt-logo-text">
+                    <path fill="currentColor" d="M65.25 19.5199v-5.73h18.18v5.73H65.25Zm11.68 25.19c-2.42 0-4.3-.62-5.64-1.86-1.34-1.24-2.01-3.01-2.01-5.32l-.03-15.44c0-.6.13-1.14.41-1.63.27-.49.65-.8 1.13-.93l-1.54-4.52v-.81l1.51-9.12995h5V35.8999c0 1.08.24 1.83.71 2.26.48.43 1.36.64 2.67.64.84 0 1.61 0 2.32-.01.71-.01 1.35-.02 1.93-.04v5.61c-.99.19-2.05.29-3.2.32-1.15.03-2.23.04-3.25.04l-.01-.01Zm9.07-.45v-30.47h5.64l.73 11.73-.59-1.62c.13-1.23.38-2.48.75-3.74.37-1.27.89-2.43 1.56-3.49s1.54-1.91 2.62-2.56c1.08-.64 2.38-.96 3.91-.96.39 0 .77.02 1.13.06.36.04.7.1 1.02.2v7.04c-.63-.22-1.3-.36-2.01-.42-.71-.06-1.37-.08-1.98-.08-.73 0-1.51.14-2.35.43-.84.29-1.61.72-2.32 1.3-.71.58-1.22 1.29-1.54 2.15v20.44h-6.59l.02-.01Zm26.7.3401c-1.82 0-3.46-.35-4.9-1.05-1.44-.7-2.57-1.68-3.38-2.93-.81-1.26-1.21-2.7-1.21-4.34 0-1.79.33-3.26.98-4.43.65-1.16 1.59-2.1 2.82-2.82 1.23-.72 2.7-1.25 4.41-1.61 1.17-.26 2.42-.4701 3.74-.6301 1.32-.16 2.56-.2899 3.7-.3899 1.14-.1001 2.02-.17 2.64-.21v-1.26c0-2.08-.41-3.64-1.24-4.68-.83-1.03-2.23-1.55-4.2-1.55-1.27 0-2.33.16-3.18.47-.86.32-1.5.9-1.94 1.75-.44.85-.67 2.07-.71 3.67h-6c-.21-2.62.17-4.78 1.13-6.46.96-1.68 2.39-2.9301 4.3-3.73 1.91-.8 4.17-1.2 6.77-1.2 1.53 0 2.98.17 4.36.52 1.38.35 2.6.93 3.66 1.76s1.9 1.96 2.51 3.39c.61 1.43.92 3.25.92 5.45v19.94h-6.45l.08-6.8101c-.35 2.05-1.25 3.75-2.69 5.11-1.44 1.3601-3.48 2.0401-6.1 2.0401h-.02Zm1.79-5c.97 0 1.96-.1601 2.96-.4901 1-.33 1.88-.8 2.64-1.4399.75-.63 1.22-1.38 1.41-2.23v-5.59c-.74.08-1.62.2-2.64.38s-1.89.35-2.61.52c-2.08.41-3.59.96-4.52 1.66-.93.7-1.4 1.77-1.4 3.23 0 .82.2 1.53.59 2.12.39.6.9 1.06 1.54 1.38.63.33 1.31.48 2.04.46h-.01Zm14.95 4.6599v-30.48h6.67v30.48h-6.67Zm5.96-7.61-.67-5.81 3.71-6.46 7.53-10.61h7.8l-10.42 14.23-2.66 2.01-5.28 6.62-.01.02Zm11.44 7.61-8.89-15.43 5.03-3.86 11.8 19.28h-7.94v.01Z"></path>
+                    <path fill="currentColor" d="M151.62 19.5199v-5.73h18.18v5.73h-18.18Zm11.67 25.19c-2.42 0-4.3-.62-5.64-1.86-1.34-1.24-2.01-3.01-2.01-5.32l-.03-15.44c0-.6.13-1.14.41-1.63.27-.49.65-.8 1.13-.93l-1.54-4.52v-.81l1.51-9.12995h5V35.8999c0 1.08.24 1.83.71 2.26.48.43 1.36.64 2.67.64.84 0 1.61 0 2.32-.01.71-.01 1.35-.02 1.93-.04v5.61c-.99.19-2.05.29-3.2.32-1.15.03-2.23.04-3.25.04l-.01-.01Z"></path>
+                  </g> -->
+                    <path fill="var(--c-trakt)" d="M48 11.26v25.47C48 42.95 42.95 48 36.73 48H11.26C5.04 48 0 42.95 0 36.73V11.26C0 5.04 5.04 0 11.26 0h25.47a11.24 11.24 0 0 1 9.62 5.4c.18.29.34.59.5.89.33.68.6 1.39.79 2.14.1.37.18.76.23 1.15.09.54.13 1.11.13 1.68Z" style=""></path>
+                    <path fill="#fff" d="m13.62 17.97 7.92 7.92 1.47-1.47-7.92-7.92-1.47 1.47Zm-.7.7-1.46 1.46 14.4 14.4 1.46-1.47L23 28.75 46.35 5.4c-.36-.6-.78-1.16-1.25-1.68L21.54 27.28l-8.62-8.61Zm15.09 13.7 1.47-1.46-2.16-2.16L47.64 8.43c-.19-.75-.46-1.46-.79-2.14L24.39 28.75l3.62 3.62ZM47.87 9.58 28.7 28.75l1.47 1.46L48 12.38v-1.12c0-.57-.04-1.14-.13-1.68ZM25.16 22.27l-7.92-7.92-1.47 1.47 7.92 7.92 1.47-1.47Zm16.16 12.85c0 3.42-2.78 6.2-6.2 6.2H12.88c-3.42 0-6.2-2.78-6.2-6.2V12.88c0-3.42 2.78-6.21 6.2-6.21h20.78V4.6H12.88c-4.56 0-8.28 3.71-8.28 8.28v22.24c0 4.56 3.71 8.28 8.28 8.28h22.24c4.56 0 8.28-3.71 8.28-8.28v-3.51h-2.07v3.51Z" style=""></path>
+                  </svg>
+            </div>
+            <div class="trakt-posters">
+                <div class="trakt-poster" style="background-image: url('https://image.tmdb.org/t/p/w300/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg')"></div>
+                <div class="trakt-poster" style="background-image: url('https://image.tmdb.org/t/p/w300/9pX6Lo7N7d6zoFCSjnYG3MG6Jua.jpg')"></div>
+                <div class="trakt-poster" style="background-image: url('https://image.tmdb.org/t/p/w300/aDQZHvI3rGdtzZ2Q3iz9XaPyD2u.jpg')"></div>
+                <div class="trakt-poster" style="background-image: url('https://image.tmdb.org/t/p/w300/dKqa850uvbwApYRn4hOtwYt6O7n.jpg')"></div>
+                <div class="trakt-poster" style="background-image: url('https://image.tmdb.org/t/p/w300/uui3JWiJwY5Mfm6yfVhtQQ5uT5B.jpg')"></div>
+                <div class="trakt-poster" style="background-image: url('https://image.tmdb.org/t/p/w300/jZXrQrv5D9nRrJWoHwJt3SAB9Z.jpg')"></div>
+            </div>
+        </a>
+
+    </main>
+
+    <script>
+        // --- Theme Toggle Logic ---
+        const toggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const moonIcon = document.getElementById('moon-icon');
+        const sunIcon = document.getElementById('sun-icon');
+
+        // Apply saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        
+        if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
+            html.setAttribute('data-theme', 'light');
+            moonIcon.style.display = 'block';
+            sunIcon.style.display = 'none';
+        } else {
+            moonIcon.style.display = 'none';
+            sunIcon.style.display = 'block';
+        }
+
+        toggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'dark');
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'block';
+            } else {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                moonIcon.style.display = 'block';
+                sunIcon.style.display = 'none';
+            }
+        });
+
+        // --- Micro-interactions ---
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                card.style.setProperty('--y', `${e.clientY - rect.top}px`);
+            });
+        });
+
+        // --- Dynamic Data Fetching ---
+
+        // GitHub Repos
+        fetch('https://api.kremilly.com/github?user=parsafatehi&per_page=3')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    document.getElementById('gh-repos').innerHTML = data.map(repo => `
+                        <div class="gh-repo"><span>${repo.name}</span><span>★ ${repo.stars}</span></div>
+                    `).join('');
+                }
+            }).catch(() => {});
+
+        // Substack RSS
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A//parsafatehi.substack.com/feed')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok' && data.items.length > 0) {
+                    const latest = data.items[0];
+                    document.getElementById('substack-title').innerText = latest.title;
+                    document.getElementById('substack-date').innerText = `Substack • ${new Date(latest.pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                }
+            }).catch(() => {});
+
+        // Medium RSS
+        fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A//medium.com/feed/%40parsafatehi')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok' && data.items.length > 0) {
+                    const latest = data.items[0];
+                    document.getElementById('medium-title').innerText = latest.title;
+                    document.getElementById('medium-date').innerText = `Medium • ${new Date(latest.pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                }
+            }).catch(() => {});
+
+        // Spotify Dynamic Load (Looks for data/spotify.json generated by GitHub Action)
+        fetch('data/spotify.json')
+            .then(res => {
+                if (!res.ok) throw new Error('Spotify data not found');
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('spotify-art').src = data.albumArt;
+                document.getElementById('spotify-title').innerText = data.title;
+                document.getElementById('spotify-artist').innerText = data.artist;
+            })
+            .catch(() => { /* Fallback to static HTML already loaded */ });
+
+        // Instagram Dynamic Load (Looks for data/instagram.json generated by GitHub Action)
+        fetch('data/instagram.json')
+            .then(res => {
+                if (!res.ok) throw new Error('Instagram data not found');
+                return res.json();
+            })
+            .then(data => {
+                const posts = data.posts.slice(0, 4);
+                posts.forEach((post, i) => {
+                    const el = document.getElementById(`ig-${i + 1}`);
+                    if (el) el.style.backgroundImage = `url('${post.image}')`;
+                });
+            })
+            .catch(() => { /* Fallback to static HTML already loaded */ });
+    </script>
+</body>
+</html>
